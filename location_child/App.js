@@ -12,16 +12,26 @@ import {
 import { WebBrowser,Constants, Location, Permissions,MapView} from 'expo';
 import * as firebase from 'firebase'
 
+const colors = [
+  "#C0392B",
+  "#9B59B6",
+  "#2980B9",
+  "#1ABC9C",
+  "#F1C40F",
+  "#E67E22",
+  "#F0F3F4",
+  "#2C3E50"
+]
+
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
     header: null,
   };
   state = {
       location: null,
-      errorMessage: null,
-      region:null,
-      latitudeDelta:null,
-      longitudeDelta:null
+      sendLocation:1234,
+      mixelColors : [],
+      color : 0
     };
 
     componentWillMount() {
@@ -48,16 +58,17 @@ export default class HomeScreen extends React.Component {
       const oneDegreeOfLatitudeInMeters = 111.32 * 1000;
       const latDelta =location.coords.accuracy / oneDegreeOfLatitudeInMeters;
       const longDelta = location.coords.accuracy / (oneDegreeOfLatitudeInMeters * Math.cos(location.coords.latitude * (Math.PI / 180)));
-      alert(location.coords.latitude)
+    //  alert(location.coords.latitude)
       //alert(location.coords.longitude)
         //}, 3000);
         this.setState({
           location:location,
-          latitudeDelta:latDelta,
-          longitudeDelta:longDelta
          });
     };
    sendLocation() {
+     this.setState({
+       sendLocation:null
+      });
      var config = {
     apiKey: "AIzaSyDxqDaTcAUR3R6fZwI7PSz5H1yGhVnHHH4",
     authDomain: "location-72fca.firebaseapp.com",
@@ -70,31 +81,62 @@ export default class HomeScreen extends React.Component {
  firebase.database().ref('users/').set({
    loc: this.state.location
  });
- alert(228)
+ //alert(228)
+}
+onMixelPress (mixelNumber) {
+
+    //console.log(mixelNumber)
+    let tempColors = this.state.mixelColors
+
+    tempColors[mixelNumber] = this.state.color
+    this.setState({mixelColors: tempColors})
+  }
+onSuggestPress(colorNum){
+   this.setState({
+     color: colorNum
+   })
 }
   render() {
-    let text = 'please wait 5 seconds(or more)';
-    if (this.state.errorMessage) {
-      text = this.state.errorMessage;
-    } else if (this.state.location) {
-      //latitude = this.state.location.coords.latitude;
-      //longitude = this.state.location.coords.longitude;
-      text = JSON.stringify(this.state.location);
-    }
+    let mixels = [], suggests = []
+
+
+  for (let i =0 ; i <64 ; i++) {
+    mixels.push(
+      <TouchableOpacity key={i} onPress={() => { this.onMixelPress(i) }} style={[styles.mixel, {backgroundColor: colors[this.state.mixelColors[i]]}]}/>
+    )
+  }
+
+  for (let colorNum in colors) {
+    suggests.push(
+      <TouchableOpacity key={'s' + colorNum} onPress={() => { this.onSuggestPress(colorNum) }}style={[styles.mixel, {backgroundColor: colors[colorNum]}]}/>
+    )
+  }
     if(this.state.location){
-      return (
+      if(this.state.sendLocation){
+        return (
 
-        <View style={styles.container}>
-        <Button
-    onPress={() => {this.sendLocation()}}
-    title="Play "
-    color="#841584"
-    accessibilityLabel="Learn more about this purple button"
-  />
-      </View>
+          <View style={styles.container}>
+          <Button
+      onPress={() => {this.sendLocation()}}
+      title="Play "
+      color="#841584"
+      accessibilityLabel="Learn more about this purple button"
+    />
+        </View>
 
 
-            )
+              )
+      } else {
+        return(
+          <View style={styles.container_mixel}>
+
+             {mixels}
+
+
+            {suggests}
+         </View>
+        )
+      }
     } else {
       return(
           <View style={styles.container}>
@@ -106,10 +148,27 @@ export default class HomeScreen extends React.Component {
 }
 const styles = StyleSheet.create({
   container: {
-    flex: 1,      
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: Constants.statusBarHeight,
     backgroundColor: '#ecf0f1',
   },
+  container_mixel: {
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width:'100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: '20%'
+  },
+
+  mixel: {
+    width: '12%',
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
+    aspectRatio: 1
+  }
 });

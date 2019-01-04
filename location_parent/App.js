@@ -10,6 +10,7 @@ import {
   Button,
 } from 'react-native';
 import { WebBrowser,Constants, Location, Permissions,MapView} from 'expo';
+import { Marker, ProviderPropType } from 'react-native-maps';
 import * as firebase from 'firebase'
 
 export default class HomeScreen extends React.Component {
@@ -19,9 +20,13 @@ export default class HomeScreen extends React.Component {
   state = {
       latitude: null,
       longitude: null,
-      region:null
+      region:null,
+      getLocation:12345
     };
     getLocation() {
+      this.setState({
+          getLocation:null
+           });
      var config = {
     apiKey: "AIzaSyDxqDaTcAUR3R6fZwI7PSz5H1yGhVnHHH4",
     authDomain: "location-72fca.firebaseapp.com",
@@ -44,8 +49,6 @@ export default class HomeScreen extends React.Component {
   render() {
     if(this.state.latitude){
       return (
-
-
         <MapView
         style={{ flex: 1 }}
         initialRegion={{
@@ -54,21 +57,39 @@ export default class HomeScreen extends React.Component {
           latitudeDelta: 0.005,//this.state.latitudeDelta,
           longitudeDelta: 0.005//this.state.longitudeDelta,
         }}
-      />
+      >
 
+      <Marker
+                 coordinate={{
+                   latitude: this.state.latitude,
+                   longitude: this.state.longitude
+               }}
+               centerOffset={{ x: 45, y: 45 }}
+               anchor={{ x: 1, y: 1 }}
+               opacity={0.6}
+             >
+               <Text style={styles.marker}>X</Text>
+             </Marker>
+             </MapView>
 
             )
+
     } else {
-      return(
-      <View style={styles.container}>
-        <Button
-    onPress={() => {this.getLocation()}}
-    title="see map"
-    color="#841584"
-    accessibilityLabel="Learn more about this purple button"
-  />
-  </View>
-)
+      if (this.state.getLocation){
+        return(
+        <View style={styles.container}>
+          <Button
+      onPress={() => {this.getLocation()}}
+      title="see map"
+      color="#841584"
+      accessibilityLabel="Learn more about this purple button"
+        />
+        </View>
+      )
+    } else {
+      return(  <View style={styles.container}><Text>Loading</Text></View>)
+    }
+
     }
   }
 }
@@ -79,5 +100,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingTop: Constants.statusBarHeight,
     backgroundColor: '#ecf0f1',
+  },
+  marker: {
+    marginLeft: 46,
+    marginTop: 33,
+    fontWeight: 'bold',
   },
 });
